@@ -1,0 +1,13 @@
+package com.example.jp_user_service.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 用户控制器 - RESTful API
+ */
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+}
