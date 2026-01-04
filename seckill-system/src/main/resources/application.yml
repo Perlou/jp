@@ -1,0 +1,126 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: seckill-system
+
+  # 数据源配置 (HikariCP 最佳实践)
+  datasource:
+    url: jdbc:mysql://localhost:3307/seckill?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&cachePrepStmts=true&prepStmtCacheSize=250
+    username: seckill
+    password: seckill123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # ========== HikariCP 连接池优化配置 ==========
+    hikari:
+      # 连接池大小 = (CPU核心数 × 2) + 有效磁盘数 ≈ 10
+      maximum-pool-size: 10
+      minimum-idle: 10 # 建议与 max 相同，避免动态调整开销
+      connection-timeout: 30000 # 获取连接超时 30s
+      idle-timeout: 600000 # 空闲连接存活 10 分钟
+      max-lifetime: 1800000 # 连接最大生命周期 30 分钟
+      pool-name: SeckillHikariPool
+      # 连接验证
+      connection-test-query: SELECT 1
+
+  # Flyway 配置
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # Redis 配置
+  data:
+    redis:
+      host: localhost
+      port: 6380
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+  # RabbitMQ 配置
+  rabbitmq:
+    host: localhost
+    port: 5673
+    username: admin
+    password: admin123
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# Actuator 监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,hikaricp
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# 日志配置
+logging:
+  level:
+    com.example.seckill: debug
+    org.springframework.amqp: info
+    com.zaxxer.hikari: debug # 连接池日志
+
+# 秒杀配置
+seckill:
+  # 库存缓存 key 前缀
+  stock-key-prefix: "seckill:stock:"
+  # 已购买用户 key 前缀
+  bought-key-prefix: "seckill:bought:"
+  # 秒杀结果 key 前缀
+  result-key-prefix: "seckill:result:"
+
+# ========== JVM 启动参数建议 ==========
+# java -server -Xms512m -Xmx512m \
+#   -XX:+UseG1GC -XX:MaxGCPauseMillis=200 \
+#   -XX:+HeapDumpOnOutOfMemoryError \
+#   -Xlog:gc*:file=gc.log:time:filecount=5,filesize=100m \
+#   -jar seckill-system.jar
+
+---
+# H2 数据库配置 (开发测试用)
+spring:
+  config:
+    activate:
+      on-profile: h2
+
+  datasource:
+    url: jdbc:h2:mem:seckill;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  flyway:
+    enabled: false
