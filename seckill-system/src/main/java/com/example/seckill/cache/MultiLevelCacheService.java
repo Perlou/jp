@@ -16,6 +16,7 @@ import java.util.function.Function;
 
 /**
  * 多级缓存服务
+ * Phase 17: 分布式存储架构 - Cache-Aside 模式实现
  * 
  * L1: Caffeine 本地缓存 (热点数据，毫秒级访问)
  * L2: Redis 分布式缓存 (共享数据，跨节点)
